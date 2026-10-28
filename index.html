@@ -940,6 +940,44 @@ form.newitem .f3 { flex: 1 1 200px; }
   applyMode(); applyCurrency(); applyText(); syncBgUi(); applyBg(); renderPay(); setStatus(); folderStatus(); render();
 })();
 </script>
+<!-- ITEM SEARCH: paste this whole block just before the </body> line near the end of index.html -->
+<style>
+.itemsearch input { width: 100%; font: inherit; font-size: 16px; color: var(--ink); background: var(--surface); border: 2px solid var(--line); border-radius: 999px; padding: 11px 16px; }
+.itemsearch input:focus { outline: 2px solid var(--maroon-text); outline-offset: 2px; border-color: var(--maroon-text); }
+#nomatch { color: var(--muted); padding: 10px 4px; }
+</style>
+<script>
+(function () {
+  var cards = document.getElementById("cards");
+  if (!cards) return;
+  var box = document.createElement("div");
+  box.className = "itemsearch";
+  box.innerHTML = '<input id="itemsearch" type="search" placeholder="Search items by name" aria-label="Search items" autocomplete="off">';
+  var none = document.createElement("div");
+  none.id = "nomatch"; none.textContent = "No items match your search."; none.hidden = true;
+  cards.parentNode.insertBefore(box, cards);
+  cards.parentNode.insertBefore(none, cards);
+  var input = document.getElementById("itemsearch");
+  function apply() {
+    var terms = input.value.toLowerCase().split(/\s+/).filter(Boolean), shown = 0;
+    Array.prototype.forEach.call(cards.children, function (card) {
+      var nm = card.querySelector(".cname");
+      if (!nm) { card.hidden = false; shown++; return; }
+      var text = nm.textContent.toLowerCase();
+      var ok = terms.every(function (t) { return text.indexOf(t) >= 0; });
+      card.hidden = !ok; if (ok) shown++;
+    });
+    none.hidden = shown > 0 || terms.length === 0;
+  }
+  input.addEventListener("input", apply);
+  new MutationObserver(apply).observe(cards, { childList: true });
+  ["printsale", "nosprint"].forEach(function (id) {
+    var b = document.getElementById(id);
+    if (b) b.addEventListener("click", function () { setTimeout(function () { input.value = ""; apply(); }, 300); });
+  });
+  apply();
+})();
+</script>
 
 </body>
 </html>
